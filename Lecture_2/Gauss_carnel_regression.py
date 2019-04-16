@@ -34,12 +34,29 @@ class Gauss_carnel_regression:
         # x[None] - c[:, None]の部分で、計画行列の引数の組のところを作っている(このとき、2次元配列になっている)
         return np.exp(-(x[None] - c[:, None]) ** 2 / (2 * h ** 2))
 
+    @staticmethod
+    def minimum_square_error(indexes, y1, y2):
+        '''
+        最小二乗誤差を計算する
+        インデックスを用いて計算する
+        '''
+        error = 0.0
+        for i in indexes:
+            error += (y1[i] - y2[i])**2 / 2
+        return error
+
     @classmethod
     def cross_validation(self, x, c, h, lam, k):
+        '''
+        cross validationにより推定の妥当性を計算する
+        '''
+        error_all = 0.0
         for i in range(int(len(x) / k)):
             # テスト用データ
+            '''
             x_test = x[k * i:k * (i + 1):1]
             y_test = y[k * i:k * (i + 1):1]
+            '''
             # 学習用データ
             if i == 0:
                 x_train = x[k * (i + 1)::1]
@@ -48,11 +65,21 @@ class Gauss_carnel_regression:
                 x_train = np.r_[x[:k * i:1], x[k * (i + 1)::1]]
                 y_train = np.r_[y[:k * i:1], y[k * (i + 1)::1]]
             # 学習用データを用いて、計画行列を計算する
-            kappa = self.calc_design_matrix(x, x, h)
-            # 最小二乗誤差の計算によりパラメータを推定
+            kappa_train = self.calc_design_matrix(x_train, x_train, h)
+            # 学習した結果から全領域のデータを書き出すための計画行列
+            kappa = self.calc_design_matrix(x_train, x, h)
+            # 最小二乗誤差の計算によりパラメータを推定(解析解があるので連立方程式を解く)
             theta = np.linalg.solve(
-                kappa.T.dot(kappa) + lam * np.identity(len(kappa)),
-                kappa.T.dot(y[:, None]))
+                kappa_train.T.dot(kappa_train) + lam * np.identity(len(kappa_train)),
+                kappa_train.T.dot(y_train[:, None]))
+            # 予想データを出力
+            prediction = kappa.dot(theta)
+            # テストデータを用いて妥当性を検証する
+            error = self.minimum_square_error(np.array(range(k * i, k * (i + 1))), prediction[:, 0], y)
+            error_all += error / float(int(len(x) / k))
+        print(error_all)
+        return error_all
+
 
 
 
