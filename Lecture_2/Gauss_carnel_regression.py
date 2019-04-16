@@ -50,7 +50,7 @@ class Gauss_carnel_regression:
         '''
         cross validationにより推定の妥当性を計算する
         '''
-        error_all = 0.0
+        error_average = 0.0
         for i in range(int(len(x) / k)):
             # テスト用データ
             '''
@@ -76,11 +76,9 @@ class Gauss_carnel_regression:
             prediction = kappa.dot(theta)
             # テストデータを用いて妥当性を検証する
             error = self.minimum_square_error(np.array(range(k * i, k * (i + 1))), prediction[:, 0], y)
-            error_all += error / float(int(len(x) / k))
-        print(error_all)
-        return error_all
-
-
+            error_average += error / float(int(len(x) / k))
+        # print(error_average)
+        return error_average
 
 
 if __name__ == '__main__':
@@ -94,14 +92,25 @@ if __name__ == '__main__':
     print(test1[None] - test1[:, None])
     """
 
+    # パラメータ設定
+    sample_size = 50
+    xmin, xmax = -3, 3
+    hs = [0.01, 0.1, 1.0, 10, 100]
+    lams = [0.1, 0.3, 0.5, 0.7]
+    k = 3
+
     np.random.seed(0)  # set the random seed for reproducibility
 
     # create sample
-    sample_size = 50
-    xmin, xmax = -3, 3
     true_f = 'np.sin(np.pi * x) / (np.pi * x) + 0.1 * x'  # 正解の関数
     x, y = Gauss_carnel_regression.generate_sample(xmin=xmin, xmax=xmax, sample_size=sample_size, true_f=true_f)
-    h = 0.1
-    lam = 0.3
-    k = 3
-    Gauss_carnel_regression.cross_validation(x, x, h, lam, k)
+    # cross validation
+    result = np.zeros((len(hs), len(lams)))  # 結果の格納用配列
+    for i in range(len(hs)):
+        for j in range(len(lams)):
+            h = hs[i]
+            lam = lams[j]
+            result[i, j] = Gauss_carnel_regression.cross_validation(x, x, h, lam, k)
+    # 誤差が最小のインデックスを調べる
+    ans_index = np.unravel_index(np.argmin(result), result.shape)
+    print(ans_index)
