@@ -34,6 +34,23 @@ class Gauss_carnel_regression:
         # x[None] - c[:, None]の部分で、計画行列の引数の組のところを作っている(このとき、2次元配列になっている)
         return np.exp(-(x[None] - c[:, None]) ** 2 / (2 * h ** 2))
 
+    @staticmethod
+    def cross_validation(x, c, h, k):
+        for i in range(int(len(x) / k)):
+            # テスト用データ
+            x_test = x[k * i:k * (i + 1):1]
+            y_test = y[k * i:k * (i + 1):1]
+            # 学習用データ
+            if i == 0:
+                x_train = x[k * (i + 1)::1]
+                y_train = y[k * (i + 1)::1]
+            else:
+                x_train = np.r_[x[:k * i:1], x[k * (i + 1)::1]]
+                y_train = np.r_[y[:k * i:1], y[k * (i + 1)::1]]
+            print(x_test)
+            print(x_train)
+            # print(x_test)
+
 
 if __name__ == '__main__':
     """
@@ -53,3 +70,6 @@ if __name__ == '__main__':
     xmin, xmax = -3, 3
     true_f = 'np.sin(np.pi * x) / (np.pi * x) + 0.1 * x'  # 正解の関数
     x, y = Gauss_carnel_regression.generate_sample(xmin=xmin, xmax=xmax, sample_size=sample_size, true_f=true_f)
+    h = 0.1
+    k = 3
+    Gauss_carnel_regression.cross_validation(x, x, h, k)
