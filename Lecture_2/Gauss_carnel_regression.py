@@ -9,7 +9,7 @@ Last Update :
 """
 
 import numpy as np
-import matplotlib
+import matplotlib.pyplot as plt
 
 
 class Gauss_carnel_regression:
@@ -96,7 +96,7 @@ if __name__ == '__main__':
     sample_size = 50
     xmin, xmax = -3, 3
     hs = [0.01, 0.1, 1.0, 10, 100]
-    lams = [0.1, 0.3, 0.5, 0.7]
+    lams = [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0]
     k = 3
 
     np.random.seed(0)  # set the random seed for reproducibility
@@ -113,4 +113,19 @@ if __name__ == '__main__':
             result[i, j] = Gauss_carnel_regression.cross_validation(x, x, h, lam, k)
     # 誤差が最小のインデックスを調べる
     ans_index = np.unravel_index(np.argmin(result), result.shape)
-    print(ans_index)
+    # 誤差最小となるhとlambdaを出力する
+    print('h = ', float(hs[ans_index[0]]), ', lambda = ', float(lams[ans_index[1]]), ', error = ', result[ans_index[0], ans_index[1]])
+    # 誤差最小の結果について、グラフを書き出す
+    # create data to visualize the prediction
+    X = np.linspace(start=xmin, stop=xmax, num=5000)
+    k = Gauss_carnel_regression.calc_design_matrix(x, x, hs[ans_index[0]])
+    K = Gauss_carnel_regression.calc_design_matrix(x, X, hs[ans_index[0]])
+    theta = np.linalg.solve(
+        k.T.dot(k) + lams[ans_index[1]] * np.identity(len(k)),
+        k.T.dot(y[:, None]))
+    prediction = K.dot(theta)
+    # visualization
+    plt.clf()
+    plt.scatter(x, y, c='green', marker='o')
+    plt.plot(X, prediction)
+    plt.savefig('homework1_result.png')
