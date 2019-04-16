@@ -34,8 +34,8 @@ class Gauss_carnel_regression:
         # x[None] - c[:, None]の部分で、計画行列の引数の組のところを作っている(このとき、2次元配列になっている)
         return np.exp(-(x[None] - c[:, None]) ** 2 / (2 * h ** 2))
 
-    @staticmethod
-    def cross_validation(x, c, h, k):
+    @classmethod
+    def cross_validation(self, x, c, h, lam, k):
         for i in range(int(len(x) / k)):
             # テスト用データ
             x_test = x[k * i:k * (i + 1):1]
@@ -47,14 +47,18 @@ class Gauss_carnel_regression:
             else:
                 x_train = np.r_[x[:k * i:1], x[k * (i + 1)::1]]
                 y_train = np.r_[y[:k * i:1], y[k * (i + 1)::1]]
-            print(x_test)
-            print(x_train)
-            # print(x_test)
+            # 学習用データを用いて、計画行列を計算する
+            kappa = self.calc_design_matrix(x, x, h)
+            # 最小二乗誤差の計算によりパラメータを推定
+            theta = np.linalg.solve(
+                kappa.T.dot(kappa) + lam * np.identity(len(kappa)),
+                kappa.T.dot(y[:, None]))
+
 
 
 if __name__ == '__main__':
     """
-    # 注意。a[行指定, 列指定]です！
+    # a[行指定, 列指定]！
     test = np.array([[11, 12], [21, 22]])
     print(test)
     print(test[:, 0])
@@ -71,5 +75,6 @@ if __name__ == '__main__':
     true_f = 'np.sin(np.pi * x) / (np.pi * x) + 0.1 * x'  # 正解の関数
     x, y = Gauss_carnel_regression.generate_sample(xmin=xmin, xmax=xmax, sample_size=sample_size, true_f=true_f)
     h = 0.1
+    lam = 0.3
     k = 3
-    Gauss_carnel_regression.cross_validation(x, x, h, k)
+    Gauss_carnel_regression.cross_validation(x, x, h, lam, k)
