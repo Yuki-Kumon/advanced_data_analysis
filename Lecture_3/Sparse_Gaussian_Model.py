@@ -68,7 +68,7 @@ def cross_validation(x, y, c, h, lam, k):
     return error_average
 
 
-def loop(x, kappa, loop_max):
+def loop(x, y, kappa, lam, loop_max):
     '''
     交互方向乗数法により、スパースな解を見つける
     '''
@@ -79,7 +79,10 @@ def loop(x, kappa, loop_max):
 
     # update
     for i in range(loop_max):
-        theta = np.linalg.inv((kappa.T.dot(kappa) + np.eye(len(x))))
+        theta = np.linalg.inv((kappa.T.dot(kappa) + np.eye(len(x)))).dot(kappa.T.dot(y) + z - u)
+        z = np.maximum(0, theta + u - lam) + np.minimum(0, theta + u + lam)
+        u = u + theta - z
+    return theta, z, u
 
 
 if __name__ == '__main__':
@@ -97,4 +100,4 @@ if __name__ == '__main__':
     kappa = calc_design_matrix(x, x, h)
 
     # calc parameters
-    loop(x, kappa, 1)
+    loop(x, y, kappa, lam, 100)
