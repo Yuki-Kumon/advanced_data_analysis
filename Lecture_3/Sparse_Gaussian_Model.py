@@ -82,10 +82,14 @@ def loop(x, y, kappa, lam, loop_max):
         theta = np.linalg.inv((kappa.T.dot(kappa) + np.eye(len(x)))).dot(kappa.T.dot(y) + z - u)
         z = np.maximum(0, theta + u - lam) + np.minimum(0, theta + u + lam)
         u = u + theta - z
+    # drop minor thetas
+    theta = np.where(theta < 0.001, 0.0, theta)
     return theta, z, u
 
 
 if __name__ == '__main__':
+    np.random.seed(0)  # set the random seed for reproducibility
+    
     # set parameters
     sample_size = 50
     xmin, xmax = -3, 3
@@ -100,4 +104,21 @@ if __name__ == '__main__':
     kappa = calc_design_matrix(x, x, h)
 
     # calc parameters
-    loop(x, y, kappa, lam, 100)
+    theta, z, u = loop(x, y, kappa, lam, 10000)
+    # print(theta)
+    # count zero thetas
+    print('zero parameters quantity: ', str(np.sum(theta < 0.001)))
+
+    # create data to visualize the prediction
+    X = np.linspace(start=xmin, stop=xmax, num=5000)
+    k = calc_design_matrix(x, x, h)
+    K = calc_design_matrix(x, X, h)
+    theta = np.linalg.solve(
+        k.T.dot(k) + lam * np.identity(len(k)),
+        k.T.dot(y[:, None]))
+    prediction = K.dot(theta)
+    # visualization
+    plt.clf()
+    plt.scatter(x, y, c='green', marker='o')
+    plt.plot(X, prediction)
+    plt.savefig('Lec3_homework2_result.png')
