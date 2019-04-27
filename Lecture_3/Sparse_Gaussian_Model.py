@@ -41,6 +41,7 @@ def minimum_square_error(indexes, y1, y2):
     return error
 
 
+"""
 def cross_validation(x, y, c, h, lam, k):
     '''
     cross validationにより推定の妥当性を計算する
@@ -66,6 +67,7 @@ def cross_validation(x, y, c, h, lam, k):
         # 交互方向乗数法により反復計算で解を探す
     # print(error_average)
     return error_average
+"""
 
 
 def loop(x, y, kappa, lam, loop_max):
@@ -89,7 +91,7 @@ def loop(x, y, kappa, lam, loop_max):
 
 if __name__ == '__main__':
     np.random.seed(0)  # set the random seed for reproducibility
-    
+
     # set parameters
     sample_size = 50
     xmin, xmax = -3, 3
