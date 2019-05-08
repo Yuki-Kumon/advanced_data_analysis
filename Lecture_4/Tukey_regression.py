@@ -13,7 +13,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 
-np.random.seed(1)
+# np.random.seed(1)
 
 
 def generate_sample(x_min=-3., x_max=3., sample_size=10):
@@ -63,7 +63,19 @@ def iterative_reweighted_least_squares(x, y, eta=1., n_iter=1000):
     return theta
 
 
+def visualize(x, y, theta, x_min=-4., x_max=4., filename='homework_result.png'):
+    X = np.linspace(x_min, x_max, 1000)
+    Phi = build_design_matrix(X)
+    Y = Phi.dot(theta)
+    plt.clf()
+    plt.plot(X, Y, color='green')
+    plt.scatter(x, y, c='blue', marker='o')
+    plt.savefig(filename)
+
+
 if __name__ == '__main__':
     # create dataset
     x, y = generate_sample()
     theta = iterative_reweighted_least_squares(x, y)
+    # 結果を書き出し
+    visualize(x, y, theta)
