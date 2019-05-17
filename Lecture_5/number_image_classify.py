@@ -6,7 +6,7 @@
 Author :
     Yuki Kumon
 Last Update :
-    2019-05-08
+    2019-05-17
 """
 
 
@@ -135,7 +135,7 @@ def train(digit, dataloader, width, regularizer, rate):
     # 計画行列の作成(5000個全ては扱えないので、適当に数を減らす)
     phi = build_design_mat(x, x, width)
     theta = optimize_param(phi, label, regularizer)
-    return theta
+    return theta, x
 
 
 if __name__ == '__main__':
@@ -146,7 +146,11 @@ if __name__ == '__main__':
     loader = dataloader(csv_root)
     # 学習させ、パラメータを得る
     thetas = []
+    xs = []
     for i in range(10):
-        thetas.append(train(i, loader, width, regularizer, rate))
+        theta, x = train(i, loader, width, regularizer, rate)
+        thetas.append(theta)
+        xs.append(x)
     # save
     np.save('thetas.npy', thetas)
+    np.save('xs.npy', xs)
