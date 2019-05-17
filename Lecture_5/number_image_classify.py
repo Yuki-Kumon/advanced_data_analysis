@@ -24,6 +24,12 @@ def build_design_mat(x1, x2, bandwidth):
         -np.sum((x1[:, None] - x2[None]) ** 2, axis=-1) / (2 * bandwidth ** 2))
 
 
+def optimize_param(design_mat, y, regularizer):
+    return np.linalg.solve(
+        design_mat.T.dot(design_mat) + regularizer * np.identity(len(y)),
+        design_mat.T.dot(y))
+
+
 def load_csv(path):
     '''
     csvファイルから数字データを取得。numpy配列に格納する。
@@ -106,7 +112,7 @@ class dataloader():
         return images[:select_len]
 
 
-def train(digit, dataloader, width, rate):
+def train(digit, dataloader, width, regularizer, rate):
     '''
     一対多法の学習関数
     '''
@@ -128,10 +134,19 @@ def train(digit, dataloader, width, rate):
     label[len(positive):] = np.zeros(len(negative), dtype=int)
     # 計画行列の作成(5000個全ては扱えないので、適当に数を減らす)
     phi = build_design_mat(x, x, width)
+    theta = optimize_param(phi, label, regularizer)
+    return theta
 
 
 if __name__ == '__main__':
-    csv_path = '/Users/yuki_kumon/Documents/python/advanced_data_analysis/Lecture_5/digit/digit_test2.csv'
+    rate = 0.1
+    regularizer = 1.0
+    width = 10.0
     csv_root = '/Users/yuki_kumon/Documents/python/advanced_data_analysis/Lecture_5/digit/'
-    a = dataloader(csv_root)
-    train(1, a, 10.0, 0.1)
+    loader = dataloader(csv_root)
+    # 学習させ、パラメータを得る
+    thetas = []
+    for i in range(10):
+        thetas.append(train(i, loader, width, regularizer, rate))
+    # save
+    np.save('thetas.npy', thetas)
