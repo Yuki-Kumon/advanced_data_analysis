@@ -102,10 +102,11 @@ class dataloader():
         '''
         length = len(images)
         select_len = int(length * rate)
-        return np.random.choice(images, select_len)
+        np.random.shuffle(images)
+        return images[:select_len]
 
 
-def train(digit, dataloader, width):
+def train(digit, dataloader, width, rate):
     '''
     一対多法の学習関数
     '''
@@ -115,22 +116,22 @@ def train(digit, dataloader, width):
     positive = dataloader('train', digit)
     for i in range(len(nums)):
         if i == 0:
-            negative = dataloader('train', nums[i])
+            negative = dataloader.down_sampling(dataloader('train', nums[i]), rate)
         else:
             temp = negative
             del negative
-            negative = np.concatenate([temp, dataloader('train', nums[i])])
+            negative = np.concatenate([temp, dataloader.down_sampling(dataloader('train', nums[i]), rate)])
     x = np.concatenate([positive, negative])
     # 正解ラベルの作成
     label = np.empty(len(positive) + len(negative), dtype=int)
     label[:len(positive)] = np.ones(len(positive), dtype=int)
     label[len(positive):] = np.zeros(len(negative), dtype=int)
     # 計画行列の作成(5000個全ては扱えないので、適当に数を減らす)
-    phi = build_design_mat(x[0:100], x[0:100], width)
+    phi = build_design_mat(x, x, width)
 
 
 if __name__ == '__main__':
     csv_path = '/Users/yuki_kumon/Documents/python/advanced_data_analysis/Lecture_5/digit/digit_test2.csv'
     csv_root = '/Users/yuki_kumon/Documents/python/advanced_data_analysis/Lecture_5/digit/'
     a = dataloader(csv_root)
-    train(1, a, 10.0)
+    train(1, a, 10.0, 0.1)
