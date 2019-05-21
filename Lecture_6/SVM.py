@@ -57,11 +57,11 @@ def svm(x, y, l, lr):
     :return: three-dimensional vector w
     """
 
-    w = np.ones(3)
+    w = np.zeros(3)
     prev_w = w.copy()
     phi = design_mat(x)
     for i in range(10 ** 4):
-        a = sub_diff(phi, y, w)
+        w -= lr * (sub_diff(phi, y, w) + l * phi.T.dot(y))
         if np.linalg.norm(w - prev_w) < 1e-3:
             break
         prev_w = w.copy()
@@ -92,12 +92,18 @@ def sub_diff(phi, y, w):
     '''
     線形モデルにおける劣勾配を計算する
     '''
-    # 出力(1次元ベクトル,データ数の長さ)
-    out = phi.dot(w)
-    # マージンを計算
-    margen = out * y
-    diff = np.zeros_like(w)
-    return diff
+    # 0でない場合の勾配を計算
+    diff = np.empty_like(phi)
+    for i in range(3):
+        diff[:, i] = phi[:, i] * y * w[0]
+    # 代入用の勾配
+    integral = np.zeros_like(diff)
+    for i in range(3):
+        integral[:, i] = phi[:, i] * y
+    # 劣勾配アルゴリズムによりパラメータを逐次更新
+    diffsum = np.sum(diff, axis=1, keepdims=True)
+    out = np.where(1 - diffsum < 0, 0, integral)
+    return np.sum(out, axis=0)
 
 
 if __name__ == '__main__':
