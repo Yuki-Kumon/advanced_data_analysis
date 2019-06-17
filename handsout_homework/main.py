@@ -202,8 +202,9 @@ def onehot_encode(label, class_num=10):
 
 
 if __name__ == '__main__':
-    is_cuda = False
-    epoch_max = 50
+    is_cuda = True
+    is_pretrained = False
+    epoch_max = 100
     train_path = ['./cifar-10-batches-py/data_batch_1', './cifar-10-batches-py/data_batch_2', './cifar-10-batches-py/data_batch_3', './cifar-10-batches-py/data_batch_4', './cifar-10-batches-py/data_batch_5']
     test_path = './cifar-10-batches-py/test_batch'
 
@@ -221,8 +222,12 @@ if __name__ == '__main__':
     if(is_cuda):
         criterion = criterion.to('cuda')
 
-    # 試しに
-    # train(1, is_cuda, train_loader[0], model, optimizer, criterion)
+    if(is_pretrained):
+        path = './train.tar'
+        checkpoint = torch.load(path)
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        epoch_old = checkpoint['epoch']
 
     for epoch in range(1, 1 + epoch_max):
         loader_num = np.random.choice([0, 1, 2, 3, 4])
