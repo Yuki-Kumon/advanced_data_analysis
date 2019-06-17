@@ -138,14 +138,6 @@ def set_trans():
     return trans1
 
 
-class typechange():
-    def __init__(self):
-        pass
-
-    def __call__(self, X):
-        return torch.from_numpy(X)
-
-
 def train(epoch, is_cuda, loader, model, optimizer, criterion):
     '''
     train function
@@ -156,6 +148,7 @@ def train(epoch, is_cuda, loader, model, optimizer, criterion):
         optimizer.zero_grad()
         if is_cuda:
             image = image.to('cuda')
+            label = label.to('cuda')
         output = model(image)
         loss = criterion(output, label)
         # print(output)
@@ -170,7 +163,7 @@ def train(epoch, is_cuda, loader, model, optimizer, criterion):
             100. * batch_idx / len(loader), loss.item()))
         """
     writer.add_scalar('train_loss', loss.item(), epoch)
-    print('train epoch ', str(epoch), '')
+    print('train epoch ', str(epoch), ', loss: ', str(loss.item()))
 
 
 def test(is_cuda, loader, model, criterion):
@@ -186,6 +179,7 @@ def test(is_cuda, loader, model, criterion):
         # image, label = Variable(image.float(), volatile=True), Variable(label)
         if is_cuda:
             image = image.to('cuda')
+            label = label.to('cuda')
         output = model(image)
         test_loss += criterion(output, label).item()  # sum up batch loss
         if is_cuda:
@@ -232,7 +226,7 @@ if __name__ == '__main__':
 
     for epoch in range(1, 1 + epoch_max):
         loader_num = np.random.choice([0, 1, 2, 3, 4])
-        train(1, is_cuda, train_loader[loader_num], model, optimizer, criterion)
+        train(epoch, is_cuda, train_loader[loader_num], model, optimizer, criterion)
         if epoch % 10 == 0:
             test(is_cuda, test_loader, model, criterion)
 
