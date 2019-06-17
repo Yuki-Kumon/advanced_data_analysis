@@ -19,9 +19,14 @@ import torch.utils.data  # データセット読み込み関連
 import numpy as np
 from PIL import Image
 
-from torchsummary import summary
+# from torchsummary import summary
+from tensorboardX import SummaryWriter
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
+
+
+TENSOR_BOARD_LOG_DIR = './tensorboard_log'
+writer = SummaryWriter(TENSOR_BOARD_LOG_DIR)
 
 
 def unpickle(file):
@@ -157,9 +162,15 @@ def train(epoch, is_cuda, loader, model, optimizer, criterion):
         # backward
         loss.backward()
         optimizer.step()
+        # print(output.data.max(1)[1])
+        # print(label)
+        """
         print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.6f}'.format(
             epoch, batch_idx * len(image), len(loader.dataset),
             100. * batch_idx / len(loader), loss.item()))
+        """
+    writer.add_scalar('train_loss', loss.item(), epoch)
+    print('train epoch ', str(epoch), '')
 
 
 def test(is_cuda, loader, model, criterion):
@@ -179,7 +190,7 @@ def test(is_cuda, loader, model, criterion):
         test_loss += criterion(output, label).item()  # sum up batch loss
         if is_cuda:
             image = image.to('cpu')
-        pred = output.data.max(1, keepdim=True)[1]  # get the index of the max log-probability
+        pred = output.data.max(1)[1]  # get the index of the max log-probability
         correct += pred.eq(label.data.view_as(pred)).long().cpu().sum()
 
     test_loss /= len(test_loader.dataset)
@@ -198,6 +209,7 @@ def onehot_encode(label, class_num=10):
 
 if __name__ == '__main__':
     is_cuda = False
+    epoch_max = 50
     train_path = ['./cifar-10-batches-py/data_batch_1', './cifar-10-batches-py/data_batch_2', './cifar-10-batches-py/data_batch_3', './cifar-10-batches-py/data_batch_4', './cifar-10-batches-py/data_batch_5']
     test_path = './cifar-10-batches-py/test_batch'
 
@@ -216,7 +228,22 @@ if __name__ == '__main__':
         criterion = criterion.to('cuda')
 
     # 試しに
-    train(1, is_cuda, train_loader[0], model, optimizer, criterion)
+    # train(1, is_cuda, train_loader[0], model, optimizer, criterion)
+
+    for epoch in range(1, 1 + epoch_max):
+        loader_num = np.random.choice([0, 1, 2, 3, 4])
+        train(1, is_cuda, train_loader[loader_num], model, optimizer, criterion)
+        if epoch % 10 == 0:
+            test(is_cuda, test_loader, model, criterion)
+
+    # save
+    torch.save({
+        'epoch': epoch,
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+    },
+        './train.tar'
+    )
 
     """
     hoge = unpickle('./cifar-10-batches-py/test_batch')
