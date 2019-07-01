@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib
+import scipy.linalg
 
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
@@ -41,11 +42,12 @@ def cal_lpp(x, t):
     D = np.diag(np.diag(W))
 
     # 一般化固有値問題を解く
+    # 計算用の行列
     A = x.T.dot((D - W)).dot(x)
     B = x.T.dot(D).dot(x)
-    print(B)
+    eig_val, eig_vec = scipy.linalg.eig(A, B)  # 一般固化有値問題を解く
 
-    return 0
+    return eig_vec
 
 
 n = 100
@@ -53,10 +55,10 @@ n_components = 1
 # x = data_generation1(n)
 x = data_generation2(n)
 
-hoge = cal_lpp(x, 1.0)
+v = cal_lpp(x, 1.0)[:1, :]
 
 plt.xlim(-6., 6.)
 plt.ylim(-6., 6.)
 plt.plot(x[:, 0], x[:, 1], 'rx')
-# plt.plot(np.array([-v[:, 0], v[:, 0]]) * 9, np.array([-v[:, 1], v[:, 1]]) * 9)
+plt.plot(np.array([-v[:, 0], v[:, 0]]) * 9, np.array([-v[:, 1], v[:, 1]]) * 9)
 plt.savefig('lecture10-p44.png')
