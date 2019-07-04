@@ -55,6 +55,7 @@ def fda(x, y):
     return eig_vec[:1, :] / np.linalg.norm(eig_vec[:1, :])
 
 
+"""
 def visualize(x, y, T):
     plt.figure(1, (6, 6))
     plt.clf()
@@ -66,10 +67,31 @@ def visualize(x, y, T):
              np.array([-T[:, 1], T[:, 1]]) * 9, 'k-')
     plt.legend()
     plt.savefig('lecture11-h1.png')
+"""
+
+
+def visualize(x, y, T, ix):
+    plt.figure(1, (6, 6))
+    plt.clf()
+    plt.xlim(-7., 7.)
+    plt.ylim(-7., 7.)
+    plt.plot(x[y == 1, 0], x[y == 1, 1], 'bo', label='class-1')
+    plt.plot(x[y == 2, 0], x[y == 2, 1], 'rx', label='class-2')
+    plt.plot(np.array([-T[:, 0], T[:, 0]]) * 9,
+             np.array([-T[:, 1], T[:, 1]]) * 9, 'k-')
+    plt.legend()
+    name = 'lecture11-h1_' + str(ix) + '.png'
+    plt.savefig(name)
+    # plt.savefig('lecture11-h1.png')
 
 
 sample_size = 100
 x, y = generate_data(sample_size=sample_size, pattern='two_cluster')
 # x, y = generate_data(sample_size=sample_size, pattern='three_cluster')
 T = fda(x, y)
-visualize(x, y, T)
+# visualize(x, y, T)
+visualize(x, y, T, 0)
+
+x, y = generate_data(sample_size=sample_size, pattern='three_cluster')
+T = fda(x, y)
+visualize(x, y, T, 1)
