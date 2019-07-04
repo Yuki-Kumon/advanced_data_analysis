@@ -34,12 +34,25 @@ def fda(x, y):
         The embedding matrix.
     """
 
+    import scipy.linalg
+
     classes = np.unique(y)
-    # 各クラスの平均値を計算しておく
-    ave_list = []
-    for i, class in enumerate(classes):
-        
-    return
+    # クラス間散布行列、クラス内散布行列の計算
+    Sb = np.zeros([len(x[0]), len(x[0])])
+    Sw = np.zeros_like(Sb)
+    for i, class_num in enumerate(classes):
+        class_index = np.where(y == class_num)
+        mean_vec = np.matrix(np.mean(x[class_index], axis=0))
+        Sb += len(class_index[0]) * mean_vec.T.dot(mean_vec)
+        Sw += (np.matrix(x[class_index]) - mean_vec).T.dot((np.matrix(x[class_index]) - mean_vec))
+
+    """
+    C = (np.matrix(x)).T.dot((np.matrix(x)))
+    print(C)
+    print(Sw + Sb)
+    """
+    eig_val, eig_vec = scipy.linalg.eig(Sb, Sw)  # 一般固化有値問題を解く
+    return eig_vec
 
 
 def visualize(x, y, T):
