@@ -44,7 +44,7 @@ def fda(x, y):
         class_index = np.where(y == class_num)
         mean_vec = np.matrix(np.mean(x[class_index], axis=0))
         Sb += len(class_index[0]) * mean_vec.T.dot(mean_vec)
-        Sw += (np.matrix(x[class_index]) - mean_vec).T.dot((np.matrix(x[class_index]) - mean_vec))
+        Sw += (np.matrix(x[class_index[0]]) - mean_vec).T.dot((np.matrix(x[class_index[0]]) - mean_vec))
 
     """
     C = (np.matrix(x)).T.dot((np.matrix(x)))
@@ -52,7 +52,7 @@ def fda(x, y):
     print(Sw + Sb)
     """
     eig_val, eig_vec = scipy.linalg.eig(Sb, Sw)  # 一般固化有値問題を解く
-    return eig_vec
+    return eig_vec[:1, :] / np.linalg.norm(eig_vec[:1, :])
 
 
 def visualize(x, y, T):
@@ -69,7 +69,7 @@ def visualize(x, y, T):
 
 
 sample_size = 100
-# x, y = generate_data(sample_size=sample_size, pattern='two_cluster')
-x, y = generate_data(sample_size=sample_size, pattern='three_cluster')
+x, y = generate_data(sample_size=sample_size, pattern='two_cluster')
+# x, y = generate_data(sample_size=sample_size, pattern='three_cluster')
 T = fda(x, y)
 visualize(x, y, T)
