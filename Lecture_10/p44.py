@@ -55,7 +55,7 @@ n_components = 1
 # x = data_generation1(n)
 x = data_generation2(n)
 
-v = cal_lpp(x, 1.0)[:1, :]
+v = cal_lpp(x, 1.0)[1:, :]
 
 plt.xlim(-6., 6.)
 plt.ylim(-6., 6.)
